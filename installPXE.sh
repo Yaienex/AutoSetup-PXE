@@ -38,11 +38,11 @@ option arch code 93 = unsigned integer 16;
 #the subnet for IPv4
 subnet 192.168.1.0 netmask 255.255.255.0 {
       if option arch = 00:07 {
-      filename "efi64/syslinux.efi";
+      filename \"efi64/syslinux.efi\";
     } else if option arch = 00:06 {
-      filename "efi32/syslinux.efi";
+      filename \"efi32/syslinux.efi\";
     } else {
-      filename "other/pxelinux.0";
+      filename \"other/pxelinux.0\";
     }
 
     range 192.168.1.2 192.168.1.250;
@@ -57,6 +57,7 @@ sudo ip addr add 192.168.1.1/24 dev $device
 
 ### NEXT STEP TFTPD-HPA SERVER
 sudo mv /etc/default/tftpd-hpa /etc/default/tftpd-hpa.old
+sudo touch /etc/default/tftpd-hpa
 
 echo
 echo $tftpSetup
@@ -121,14 +122,14 @@ LABEL SetupMenu
     MENU LABEL ^Setup Menu
   KERNEL vesamenu.c32
   APPEND pxelinux.cfg/graphics.conf pxelinux.cfg/setup.menu
-" >> $directory/pxelinux.cfg/default
+" >> $directory/efi64/pxelinux.cfg/default
 
 ### Ubuntu 24 desktop
-wget https://releases.ubuntu.com/noble/ubuntu-24.04.1-desktop-amd64.iso
+#wget https://releases.ubuntu.com/noble/ubuntu-24.04.1-desktop-amd64.iso
 sudo mkdir  /mnt/loop
-sudo mount -o loop ubuntu-24.04.1-desktop-amd64.iso /mnt/loop
+sudo mount -o loop ./ubuntu-24.04.1-desktop-amd64.iso /mnt/loop
 sudo mkdir $directory/efi64/ubuntu24
-sudo cp -r /mnt/loop $directory/efi64/ubuntu24
+sudo cp -r /mnt/loop/* $directory/efi64/ubuntu24
 sudo cp -r /mnt/loop/.disk $directory/efi64/ubuntu24
 
 sudo umount /mnt/loop
@@ -142,8 +143,9 @@ sudo echo "MENU TITLE PXE
 
 MENU TITLE Distribution Inux
   MEN LABEL ^Install Ubuntu 24.04 desktop
-  KERNEL <chemin vers le kernel dans l'os>
-  INITRD <chemin vers l'initrd>
+  KERNEL ubuntu24/casper/vmlinuz
+  INITRD ubuntu24/casper/initrd
   APPEND ip=dhcp netboot=nfs nfsroot=http://192.168.1.1:$directory/efi64/ubuntu24
 " >> $directory/efi64/pxelinux.cfg/setup.menu
 
+systemctl restart isc-dhcp-server
