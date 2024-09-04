@@ -37,7 +37,7 @@ option arch code 93 = unsigned integer 16;
 
 #the subnet for IPv4
 subnet 192.168.1.0 netmask 255.255.255.0 {
-      if option arch = 00:07 {
+    if option arch = 00:07 {
       filename \"efi64/syslinux.efi\";
     } else if option arch = 00:06 {
       filename \"efi32/syslinux.efi\";
@@ -88,12 +88,12 @@ systemctl restart nfs-kernel-server
 ### PXE files
 mkdir $directory/{other,efi64,efi32}
 
-ln -s /usr/lib/SYSLINUX.EFI/efi32/syslinux.efi $directory/efi32
-ln -s /usr/lib/SYSLINUX.EFI/efi64/syslinux.efi $directory/efi64
+cp /usr/lib/SYSLINUX.EFI/efi32/syslinux.efi $directory/efi32
+cp /usr/lib/SYSLINUX.EFI/efi64/syslinux.efi $directory/efi64
 
-ln -s /usr/lib/syslinux/modules/efi32/{libcom32.c32,libutil.c32,ldlinux.e32,vesamenu.c32} $directory/efi32/
-ln -s /usr/lib/syslinux/modules/efi64/{libcom32.c32,libutil.c32,ldlinux.e64,vesamenu.c32} $directory/efi64/
-ln -s /usr/lib/syslinux/modules/bios/{libcom32.c32,libutil.c32,vesamenu.c32} $directory/other
+cp /usr/lib/syslinux/modules/efi32/{libcom32.c32,libutil.c32,ldlinux.e32,vesamenu.c32} $directory/efi32/
+cp /usr/lib/syslinux/modules/efi64/{libcom32.c32,libutil.c32,ldlinux.e64,vesamenu.c32} $directory/efi64/
+cp /usr/lib/syslinux/modules/bios/{libcom32.c32,libutil.c32,vesamenu.c32} $directory/other
 
 wget http://wiki.minet.net/pxelinux.0
 mv pxelinux.0 $directory/other
@@ -115,11 +115,11 @@ TIMEOUT 80
 TOTALTIMEOUT 9000
 
 LABEL LocalBoot
-    MENU LABEL ^Exit the PXE
+  MENU LABEL ^Exit the PXE
   LOCALBOOT 0xffff
 
 LABEL SetupMenu
-    MENU LABEL ^Setup Menu
+  MENU LABEL ^Setup Menu
   KERNEL vesamenu.c32
   APPEND pxelinux.cfg/graphics.conf pxelinux.cfg/setup.menu
 " >> $directory/efi64/pxelinux.cfg/default
@@ -137,15 +137,18 @@ sudo umount /mnt/loop
 
 
 sudo echo "MENU TITLE PXE
-  MENU LABEL ^Return to main menu
-  KERNEL vesamenu.c32
-  APPEND pxelinux.cfg/default
+  LABEL ^Return to main menu
+    KERNEL vesamenu.c32
+    APPEND pxelinux.cfg/default
 
-MENU TITLE Distribution Inux
-  MEN LABEL ^Install Ubuntu 24.04 desktop
+  LABEL ^Install Ubuntu 24.04 desktop
   KERNEL ubuntu24/casper/vmlinuz
   INITRD ubuntu24/casper/initrd
-  APPEND ip=dhcp netboot=nfs nfsroot=http://192.168.1.1:$directory/efi64/ubuntu24
+  APPEND ip=dhcp netboot=nfs nfsroot=192.168.1.1:$directory/efi64/ubuntu24
 " >> $directory/efi64/pxelinux.cfg/setup.menu
 
 systemctl restart isc-dhcp-server
+
+wget http://wiki.minet.net/minetpxe.png
+mv minetpxe.png $directory/pxelinux.cfg
+sudo echo "MENU BACKGROUND pxelinux.cfg/minetpxe.png">>$directory/efi64/pxelinux.cfg/graphics.conf
