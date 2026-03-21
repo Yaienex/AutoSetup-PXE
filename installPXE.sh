@@ -93,7 +93,7 @@ cp /usr/lib/SYSLINUX.EFI/efi64/syslinux.efi $directory/efi64
 
 cp /usr/lib/syslinux/modules/efi32/{libcom32.c32,libutil.c32,ldlinux.e32,vesamenu.c32} $directory/efi32/
 cp /usr/lib/syslinux/modules/efi64/{libcom32.c32,libutil.c32,ldlinux.e64,vesamenu.c32} $directory/efi64/
-cp /usr/lib/syslinux/modules/bios/{libcom32.c32,libutil.c32,vesamenu.c32} $directory/other
+cp /usr/lib/syslinux/modules/bios/{libcom32.c32,libutil.c32,ldlinux.c32,vesamenu.c32} $directory/other
 
 wget http://wiki.minet.net/pxelinux.0
 mv pxelinux.0 $directory/other
